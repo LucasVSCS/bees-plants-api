@@ -1,0 +1,47 @@
+version: "3.7"
+services:
+  app:
+    build:
+      args:
+        user: vscs
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: bees-plants
+    container_name: bees-plants-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    networks:
+      - bees-plants
+
+  db:
+    image: mysql:5.7
+    container_name: bees-plants-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    networks:
+      - bees-plants
+
+  nginx:
+    image: nginx:alpine
+    container_name: bees-plants-nginx
+    restart: unless-stopped
+    ports:
+      - 8000:80
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d/
+    networks:
+      - bees-plants
+
+networks:
+  bees-plants:
+    driver: bridge
